@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Camera</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+        .container {
+            width: 100%;
+            max-width: 640px;
+            text-align: center;
+        }
+        
+        /* 映像表示用の枠 */
+        .iframe-container {
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            background-color: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            margin-bottom: 24px;
+        }
+
+        .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* 操作ボタン */
+        .btn-container {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+        }
+        button {
+            flex: 1;
+            padding: 18px 24px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        .btn-on {
+            background-color: #ffd600;
+            color: #000;
+        }
+        .btn-off {
+            background-color: #333333;
+            color: #fff;
+        }
+        .btn-full {
+            background-color: #fff;
+            color: #000;
+        }
+
+
+        /* 画面に表示しないダミーの送信枠 */
+        #dummy-frame {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- カメラ映像 -->
+    <div class="iframe-container">
+        <iframe src="http://192.168.0.164:8080/browserfs.html" scrolling="no"></iframe>
+    </div>
+
+    <!-- ライト制御ボタン -->
+    <div class="btn-container">
+        <button class="btn-on" onclick="toggleTorch(true)">💡ON</button>
+        <button class="btn-off" onclick="toggleTorch(false)">OFF</button>
+        <form action="http://192.168.0.164:8080/browserfs.html" method="get" onsubmit="openFullScreen(this, event)">
+          <button class="btn-full">フルスクリーン</button>
+        </form>
+        <script>
+          function openFullScreen(form, event) {
+          // 1. 通常のフォーム送信（ページ遷移）をキャンセル
+          event.preventDefault(); 
+
+          // 2. ディスプレイの画面サイズ（横幅と高さ）を取得
+          const width = window.screen.availWidth;
+          const height = window.screen.availHeight;
+    
+          // 3. 画面いっぱいのサイズを指定して新しいウインドウを開く
+          window.open(
+          form.action, 
+          '_blank', 
+          `width=${width},height=${height},left=0,top=0,resizable=yes,scrollbars=yes`
+  );
+}
+</script>
+
+    </div>
+</div>
+
+<!-- コマンド送信用の非表示iframe -->
+<iframe id="dummy-frame" name="dummy-frame"></iframe>
+
+<script>
+    const CAM_HOST = 'http://192.168.0.164:8080';
+
+    function toggleTorch(enable) {
+        // enabletorch または disabletorch のURLを生成
+        const endpoint = enable ? '/enabletorch' : '/disabletorch';
+        
+        // ダミーのiframeにURLを読み込ませることで、CORS制限を回避して確実にリクエストを発行
+        const dummyFrame = document.getElementById('dummy-frame');
+        dummyFrame.src = CAM_HOST + endpoint;
+    }
+</script>
+
+</body>
+</html>
