@@ -85,14 +85,14 @@
 <div class="container">
     <!-- カメラ映像 -->
     <div class="iframe-container">
-        <iframe src="http://192.168.0.164:8080/browserfs.html" scrolling="no"></iframe>
+        <iframe id="camera-frame" scrolling="no"></iframe>
     </div>
 
     <!-- ライト制御ボタン -->
     <div class="btn-container">
         <button class="btn-on" onclick="toggleTorch(true)">ON</button>
         <button class="btn-off" onclick="toggleTorch(false)">OFF</button>
-        <form action="http://192.168.0.164:8080/browserfs.html" method="get" onsubmit="openFullScreen(this, event)">
+        <form id="fullscreen-form" method="get" onsubmit="openFullScreen(this, event)">
           <button class="btn-full">フルスクリーン</button>
         </form>
         <script>
@@ -120,7 +120,27 @@
 <iframe id="dummy-frame" name="dummy-frame"></iframe>
 
 <script>
-    const CAM_HOST = 'http://192.168.0.164:8080';
+    const DEFAULT_CAM = "http://192.168.0.164:8080";
+
+const params = new URLSearchParams(location.search);
+
+let CAM_HOST =
+    params.get("cam") ||
+    localStorage.getItem("cameraUrl") ||
+    DEFAULT_CAM;
+
+// URLパラメータがあれば保存
+if (params.get("cam")) {
+    localStorage.setItem("cameraUrl", CAM_HOST);
+}
+
+// iframe
+document.getElementById("camera-frame").src =
+    CAM_HOST + "/browserfs.html";
+
+// フルスクリーン
+document.getElementById("fullscreen-form").action =
+    CAM_HOST + "/browserfs.html";
 
     function toggleTorch(enable) {
         // enabletorch または disabletorch のURLを生成
